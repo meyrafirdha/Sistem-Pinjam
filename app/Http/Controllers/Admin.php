@@ -25,8 +25,8 @@ class Admin extends Controller
             ->when($status, fn ($query) => $query->where('status', $status))
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('nip_nrp', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('nip_nrp', 'like', '%'.$search.'%');
                 });
             })
             ->when($tanggal, fn ($query) => $query->whereDate('created_at', $tanggal))
@@ -42,7 +42,7 @@ class Admin extends Controller
 
         return view('admin.pinjaman.index', compact('pinjaman', 'status', 'counts', 'search', 'tanggal'));
     }
-    
+
     public function show(Pinjaman $pinjaman)
     {
         $pinjaman->load('user', 'processedBy');
@@ -75,7 +75,7 @@ class Admin extends Controller
             'processed_at' => now(),
         ]);
 
-        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('success', 'Pengajuan pinjaman ditolak.');
+        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('danger', 'Pengajuan pinjaman ditolak.');
     }
 
     public function updateJuruBayar(Request $request, Pinjaman $pinjaman)

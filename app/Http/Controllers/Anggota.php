@@ -68,24 +68,24 @@ class Anggota extends Controller
         return $pdf->download('formulir-pinjaman-'.$pinjaman->id.'.pdf');
     }
 
-private function authorizeOwner(Pinjaman $pinjaman): void
-{
-    if (Auth::user()->role !== 'admin' && $pinjaman->user_id !== Auth::id()) {
-        abort(403);
-    }
-}
-
-private function ensureApprovedForPrinting(Pinjaman $pinjaman): void
-{
-    // Admin boleh lihat formulir kapan saja (misalnya untuk mengisi data Juru Bayar sebelum ACC).
-    if (Auth::user()->role === 'admin') {
-        return;
+    private function authorizeOwner(Pinjaman $pinjaman): void
+    {
+        if (Auth::user()->role !== 'admin' && $pinjaman->user_id !== Auth::id()) {
+            abort(403);
+        }
     }
 
-    if (! $pinjaman->isDisetujui()) {
-        abort(403, 'Formulir hanya dapat dicetak setelah pengajuan disetujui oleh admin.');
+    private function ensureApprovedForPrinting(Pinjaman $pinjaman): void
+    {
+        // Admin boleh lihat formulir kapan saja (misalnya untuk mengisi data Juru Bayar sebelum ACC).
+        if (Auth::user()->role === 'admin') {
+            return;
+        }
+
+        if (!$pinjaman->isDisetujui()) {
+            abort(403, 'Formulir hanya dapat dicetak setelah pengajuan disetujui oleh admin.');
+        }
     }
-}
 
     private function validateData(Request $request): array
     {

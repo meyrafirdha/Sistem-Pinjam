@@ -1,0 +1,60 @@
+
+<?php $__env->startSection('title', 'Login'); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+    <h1 class="text-xl font-semibold text-[#7a1f2b] mb-6">Login USIPA</h1>
+
+    <form method="POST" action="<?php echo e(route('login')); ?>" class="space-y-4">
+        <?php echo csrf_field(); ?>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">NIP / NRP</label>
+            <input type="text" name="nip_nrp" value="<?php echo e(old('nip_nrp')); ?>" maxlength="18" required autofocus
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Password</label>
+            <div class="relative">
+                <input type="password" name="password" id="password" required
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
+                <button type="button" onclick="togglePassword('password', this)"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <svg class="eye-open w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <svg class="eye-closed w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Password awal sama dengan NIP/NRP kamu.</p>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-gray-600">
+            <input type="checkbox" name="remember"> Ingat saya
+        </label>
+        <button type="submit" class="w-full bg-[#7a1f2b] text-white rounded-lg py-2 hover:bg-[#5e1621] transition">
+            Login
+        </button>
+    </form>
+</div>
+
+<script>
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const eyeOpen = btn.querySelector('.eye-open');
+        const eyeClosed = btn.querySelector('.eye-closed');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeOpen.classList.add('hidden');
+            eyeClosed.classList.remove('hidden');
+        } else {
+            input.type = 'password';
+            eyeOpen.classList.remove('hidden');
+            eyeClosed.classList.add('hidden');
+        }
+    }
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\SistemPinjam\Sistem-Pinjam\resources\views/auth/login.blade.php ENDPATH**/ ?>

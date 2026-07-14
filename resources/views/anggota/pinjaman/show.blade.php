@@ -30,7 +30,7 @@
         <div class="mb-6 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
             <strong>Pengajuan ini ditolak.</strong>
             @if($pinjaman->catatan_admin)
-                Alasan: {{ $pinjaman->catatan_admin }}
+                Dengan alasan {{ $pinjaman->catatan_admin }} <br>
             @endif
             Silakan ajukan pinjaman baru untuk bisa di-print.
             <a href="{{ route('anggota.pinjaman.create') }}" class="underline font-medium">Ajukan ulang</a>
