@@ -11,18 +11,16 @@
             </span>
         </div>
         <div class="flex gap-2">
-            @if($pinjaman->isDisetujui())
-                <a href="{{ route('anggota.pinjaman.cetak', $pinjaman) }}" target="_blank"
-                    class="bg-red-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-red-700 active:scale-95 transition">
-                    Print
-                </a>
-            @endif
+            <a href="{{ route('anggota.pinjaman.cetak', $pinjaman) }}" target="_blank"
+                class="bg-red-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-red-700 active:scale-95 transition">
+                Print
+            </a>
         </div>
     </div>
 
     @if($pinjaman->isPending())
         <div class="mb-6 p-3 rounded-lg bg-yellow-50 text-yellow-700 text-sm border border-yellow-200">
-            Pengajuan kamu masih menunggu persetujuan admin. Formulir baru bisa di-print setelah disetujui.
+            Pengajuan kamu masih menunggu persetujuan admin.
         </div>
     @endif
 
@@ -30,9 +28,9 @@
         <div class="mb-6 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
             <strong>Pengajuan ini ditolak.</strong>
             @if($pinjaman->catatan_admin)
-                Alasan: {{ $pinjaman->catatan_admin }}
+                Dengan alasan {{ $pinjaman->catatan_admin }} <br>
             @endif
-            Silakan ajukan pinjaman baru untuk bisa di-print.
+            Silakan ajukan pinjaman baru.
             <a href="{{ route('anggota.pinjaman.create') }}" class="underline font-medium">Ajukan ulang</a>
         </div>
     @endif
@@ -71,10 +69,6 @@
             <dd class="text-gray-800">Rp {{ number_format($pinjaman->jumlah_pinjaman, 0, ',', '.') }}</dd>
         </div>
         <div>
-            <dt class="text-gray-400">Jumlah Angsuran</dt>
-            <dd class="text-gray-800">Rp {{ number_format($pinjaman->jumlah_angsuran, 0, ',', '.') }} / bulan</dd>
-        </div>
-        <div>
             <dt class="text-gray-400">Jangka Waktu</dt>
             <dd class="text-gray-800">{{ $pinjaman->jangka_waktu }}</dd>
         </div>
@@ -89,5 +83,37 @@
             </dd>
         </div>
     </dl>
+
+    <div class="mt-6 pt-6 border-t border-gray-100">
+        <h2 class="text-sm font-semibold text-gray-700 mb-3">Status Angsuran</h2>
+        <p class="text-xs text-gray-400 mb-4">Bagian ini diisi & dikelola oleh admin — kamu hanya bisa memantau.</p>
+
+        <dl class="grid sm:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+            <div>
+                <dt class="text-gray-400">Jumlah Angsuran / Bulan</dt>
+                <dd class="text-gray-800">
+                    @if($pinjaman->jumlah_angsuran)
+                        Rp {{ number_format($pinjaman->jumlah_angsuran, 0, ',', '.') }}
+                    @else
+                        <span class="text-gray-400 italic">Belum ditentukan admin</span>
+                    @endif
+                </dd>
+            </div>
+            <div>
+                <dt class="text-gray-400">Sudah Dibayar</dt>
+                <dd class="text-gray-800">{{ $pinjaman->jumlahDibayarKali() }} dari {{ $pinjaman->totalCicilan() }} cicilan</dd>
+            </div>
+            <div>
+                <dt class="text-gray-400">Sisa Angsuran</dt>
+                <dd class="text-gray-800">
+                    @if($pinjaman->sisaAngsuran() !== null)
+                        Rp {{ number_format($pinjaman->sisaAngsuran(), 0, ',', '.') }}
+                    @else
+                        <span class="text-gray-400 italic">-</span>
+                    @endif
+                </dd>
+            </div>
+        </dl>
+    </div>
 </div>
 @endsection

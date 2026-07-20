@@ -47,7 +47,13 @@
         </div>
         <div>
             <dt class="text-gray-400">Jumlah Angsuran</dt>
-            <dd class="text-gray-800">Rp <?php echo e(number_format($pinjaman->jumlah_angsuran, 0, ',', '.')); ?> / bulan</dd>
+            <dd class="text-gray-800">
+                <?php if($pinjaman->jumlah_angsuran): ?>
+                    Rp <?php echo e(number_format($pinjaman->jumlah_angsuran, 0, ',', '.')); ?> / bulan
+                <?php else: ?>
+                    <span class="text-gray-400 italic">Belum diisi</span>
+                <?php endif; ?>
+            </dd>
         </div>
         <div>
             <dt class="text-gray-400">Jangka Waktu</dt>
@@ -66,23 +72,66 @@
     </dl>
 
     <div class="mt-6 pt-6 border-t border-gray-100">
-        <h2 class="text-sm font-semibold text-gray-700 mb-2">Nama Juru Bayar (untuk formulir cetak)</h2>
+        <h2 class="text-sm font-semibold text-gray-700 mb-2">Jumlah Angsuran per Bulan</h2>
         <p class="text-xs text-gray-400 mb-3">
-            Nama ini akan muncul pada kolom tanda tangan "Juru Bayar Balitbang Kemhan" di formulir cetak pengajuan ini.
+            Isi ini setelah dokumen fisik & tanda tangan lengkap. Nilai ini yang dipakai untuk menghitung sisa angsuran.
         </p>
-        <form method="POST" action="<?php echo e(route('admin.pinjaman.juru-bayar', $pinjaman)); ?>" class="flex flex-col sm:flex-row gap-2">
+        <form method="POST" action="<?php echo e(route('admin.pinjaman.angsuran', $pinjaman)); ?>" class="flex gap-2">
             <?php echo csrf_field(); ?>
             <?php echo method_field('PUT'); ?>
-            <input type="text" name="nama_juru_bayar" value="<?php echo e(old('nama_juru_bayar', $pinjaman->nama_juru_bayar)); ?>"
-                placeholder="Nama Juru Bayar"
+            <input type="number" step="0.01" min="0" name="jumlah_angsuran" value="<?php echo e(old('jumlah_angsuran', $pinjaman->jumlah_angsuran)); ?>"
+                placeholder="Jumlah angsuran per bulan (Rp)"
                 class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
-            <input type="text" name="nrp_juru_bayar" value="<?php echo e(old('nrp_juru_bayar', $pinjaman->nrp_juru_bayar)); ?>"
-                placeholder="NRP Juru Bayar"
-                class="sm:w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
             <button type="submit" class="bg-[#7a1f2b] text-white rounded-lg px-4 py-2 text-sm hover:bg-[#5e1621] active:scale-95 transition">
                 Simpan
             </button>
         </form>
+
+        <?php if($pinjaman->isDisetujui()): ?>
+            <div class="mt-4 text-sm text-gray-600">
+                Sudah dibayar <strong><?php echo e($pinjaman->jumlahDibayarKali()); ?></strong> dari <strong><?php echo e($pinjaman->totalCicilan()); ?></strong> cicilan —
+                sisa <strong>Rp <?php echo e(number_format($pinjaman->sisaAngsuran() ?? 0, 0, ',', '.')); ?></strong>
+            </div>
+
+            <?php if($pinjaman->cicilanAngsuran->isNotEmpty()): ?>
+                <div class="mt-4 overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="text-left text-gray-400 border-b border-gray-100">
+                                <th class="py-1 pr-3">Cicilan</th>
+                                <th class="py-1 pr-3">Tanggal Bayar</th>
+                                <th class="py-1 pr-3">Jumlah Dipotong (Rp)</th>
+                                <th class="py-1"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $__currentLoopData = $pinjaman->cicilanAngsuran; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cicilan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php $formId = 'form-cicilan-'.$cicilan->id; ?>
+                                <tr class="border-b border-gray-50 <?php echo e($cicilan->sudahDibayar() ? 'bg-green-50/40' : ''); ?>">
+                                    <td class="py-1.5 pr-3 font-medium">Ke-<?php echo e($cicilan->cicilan_ke); ?></td>
+                                    <td class="py-1.5 pr-3">
+                                        <input type="date" form="<?php echo e($formId); ?>" name="tanggal_bayar" value="<?php echo e($cicilan->tanggal_bayar?->format('Y-m-d')); ?>"
+                                            class="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
+                                    </td>
+                                    <td class="py-1.5 pr-3">
+                                        <input type="number" step="0.01" min="0" form="<?php echo e($formId); ?>" name="jumlah_dipotong"
+                                            value="<?php echo e($cicilan->jumlah_dipotong ?? $pinjaman->jumlah_angsuran); ?>"
+                                            class="w-32 border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
+                                    </td>
+                                    <td class="py-1.5">
+                                        <button type="submit" form="<?php echo e($formId); ?>" class="text-[#7a1f2b] hover:underline">Simpan</button>
+                                    </td>
+                                </tr>
+                                <form id="<?php echo e($formId); ?>" method="POST" action="<?php echo e(route('admin.pinjaman.cicilan.update', [$pinjaman, $cicilan])); ?>" class="hidden">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('PUT'); ?>
+                                </form>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
     </div>
 
     <?php if(!$pinjaman->isPending()): ?>

@@ -41,12 +41,6 @@
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
             </div>
 
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">Jumlah Angsuran per Bulan (Rp)</label>
-                <input type="number" step="0.01" min="0" name="jumlah_angsuran" value="{{ old('jumlah_angsuran') }}" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
-            </div>
-
             <div class="sm:col-span-2">
                 <label class="block text-sm text-gray-600 mb-1">Jangka Waktu Pinjaman</label>
                 <input type="text" name="jangka_waktu" value="{{ old('jangka_waktu') }}" placeholder="Contoh: 24 bulan" required

@@ -59,6 +59,16 @@
         $logoKemhan = ($download ?? false) ? public_path('images/Kemhan logo.png') : asset('images/Kemhan logo.png');
         $logoKoperasi = ($download ?? false) ? public_path('images/koperasi logo.png') : asset('images/koperasi logo.png');
         $pangkatNrp = trim(($pinjaman->user->pangkat_gol ?? '').' / '.$pinjaman->user->nip_nrp, ' /');
+        // Kalau pengajuan ini SUDAH disetujui dan sudah punya snapshot sendiri, pakai itu
+        // (supaya tidak ikut berubah kalau admin ganti nama Juru Bayar global setelahnya).
+        // Kalau belum disetujui / belum ada snapshot, pakai nilai global yang berlaku saat ini.
+        $pengaturanGlobal = \App\Models\Pengaturan::current();
+        $namaJuruBayar = ($pinjaman->isDisetujui() && $pinjaman->nama_juru_bayar)
+            ? $pinjaman->nama_juru_bayar
+            : $pengaturanGlobal->nama_juru_bayar;
+        $nrpJuruBayar = ($pinjaman->isDisetujui() && $pinjaman->nrp_juru_bayar)
+            ? $pinjaman->nrp_juru_bayar
+            : $pengaturanGlobal->nrp_juru_bayar;
     @endphp
 
     <table class="header-table">
@@ -117,7 +127,7 @@
             <td class="label">Jumlah Pinjaman</td><td class="colon">:</td><td>Rp {{ number_format($pinjaman->jumlah_pinjaman, 0, ',', '.') }}</td>
         </tr>
         <tr>
-            <td class="label">Jumlah Angsuran</td><td class="colon">:</td><td>Rp {{ number_format($pinjaman->jumlah_angsuran, 0, ',', '.') }} / bulan</td>
+            <td class="label">Jumlah Angsuran</td><td class="colon">:</td><td>{{ $pinjaman->jumlah_angsuran ? 'Rp '.number_format($pinjaman->jumlah_angsuran, 0, ',', '.').' / bulan' : '(belum ditentukan)' }}</td>
         </tr>
         <tr>
             <td class="label">Jangka Waktu Pinjaman</td><td class="colon">:</td><td>{{ $pinjaman->jangka_waktu }}</td>
@@ -148,12 +158,12 @@
                 Mengetahui,<br>
                 Juru Bayar Balitbang Kemhan,
                 <div class="ttd-space"></div>
-                @if($pinjaman->nama_juru_bayar)
-                    <span class="ttd-name">{{ $pinjaman->nama_juru_bayar }}</span><br>
+                @if($namaJuruBayar)
+                    <span class="ttd-name">{{ $namaJuruBayar }}</span><br>
                 @else
                     <span class="ttd-name">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><br>
                 @endif
-                NRP. {{ $pinjaman->nrp_juru_bayar ?: '' }}
+                NRP. {{ $nrpJuruBayar ?: '' }}
             </td>
             <td style="width: 50%; text-align: center; vertical-align: top;">
                 Jakarta, {{ ($pinjaman->processed_at ?? $pinjaman->created_at)->translatedFormat('d - m - Y') }}<br>

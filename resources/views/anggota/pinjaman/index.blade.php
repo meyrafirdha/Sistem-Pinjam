@@ -19,7 +19,8 @@
                     <tr class="text-left text-gray-500 border-b border-gray-200">
                         <th class="py-2 pr-4">Tanggal</th>
                         <th class="py-2 pr-4">Jumlah Pinjaman</th>
-                        <th class="py-2 pr-4">Jangka Waktu</th>
+                        <th class="py-2 pr-4">Angsuran/Bulan</th>
+                        <th class="py-2 pr-4">Sisa Angsuran</th>
                         <th class="py-2 pr-4">Status</th>
                         <th class="py-2"></th>
                     </tr>
@@ -29,16 +30,27 @@
                         <tr class="border-b border-gray-100">
                             <td class="py-3 pr-4">{{ $item->created_at->translatedFormat('d M Y') }}</td>
                             <td class="py-3 pr-4">Rp {{ number_format($item->jumlah_pinjaman, 0, ',', '.') }}</td>
-                            <td class="py-3 pr-4">{{ $item->jangka_waktu }}</td>
+                            <td class="py-3 pr-4">
+                                @if($item->jumlah_angsuran)
+                                    Rp {{ number_format($item->jumlah_angsuran, 0, ',', '.') }}
+                                @else
+                                    <span class="text-gray-400 italic">-</span>
+                                @endif
+                            </td>
+                            <td class="py-3 pr-4">
+                                @if($item->isDisetujui() && $item->jumlah_angsuran)
+                                    Rp {{ number_format($item->sisaAngsuran(), 0, ',', '.') }}
+                                @else
+                                    <span class="text-gray-400 italic">-</span>
+                                @endif
+                            </td>
                             <td class="py-3 pr-4">
                                 <span class="text-xs px-2 py-1 rounded-full border {{ $item->statusColor() }}">
                                     {{ $item->statusLabel() }}
                                 </span>
                             </td>
                             <td class="py-3 text-right space-x-3">
-                                @if($item->isDisetujui())
-                                    <a href="{{ route('anggota.pinjaman.cetak', $item) }}" target="_blank" class="text-gray-500 hover:underline">Print</a>
-                                @endif
+                                <a href="{{ route('anggota.pinjaman.cetak', $item) }}" target="_blank" class="text-gray-500 hover:underline">Print</a>
                                 <a href="{{ route('anggota.pinjaman.show', $item) }}" class="text-[#7a1f2b] hover:underline">Detail</a>
                             </td>
                         </tr>

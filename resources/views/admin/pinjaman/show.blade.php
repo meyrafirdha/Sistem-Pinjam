@@ -47,7 +47,13 @@
         </div>
         <div>
             <dt class="text-gray-400">Jumlah Angsuran</dt>
-            <dd class="text-gray-800">Rp {{ number_format($pinjaman->jumlah_angsuran, 0, ',', '.') }} / bulan</dd>
+            <dd class="text-gray-800">
+                @if($pinjaman->jumlah_angsuran)
+                    Rp {{ number_format($pinjaman->jumlah_angsuran, 0, ',', '.') }} / bulan
+                @else
+                    <span class="text-gray-400 italic">Belum diisi</span>
+                @endif
+            </dd>
         </div>
         <div>
             <dt class="text-gray-400">Jangka Waktu</dt>
@@ -66,23 +72,66 @@
     </dl>
 
     <div class="mt-6 pt-6 border-t border-gray-100">
-        <h2 class="text-sm font-semibold text-gray-700 mb-2">Nama Juru Bayar (untuk formulir cetak)</h2>
+        <h2 class="text-sm font-semibold text-gray-700 mb-2">Jumlah Angsuran per Bulan</h2>
         <p class="text-xs text-gray-400 mb-3">
-            Nama ini akan muncul pada kolom tanda tangan "Juru Bayar Balitbang Kemhan" di formulir cetak pengajuan ini.
+            Isi ini setelah dokumen fisik & tanda tangan lengkap. Nilai ini yang dipakai untuk menghitung sisa angsuran.
         </p>
-        <form method="POST" action="{{ route('admin.pinjaman.juru-bayar', $pinjaman) }}" class="flex flex-col sm:flex-row gap-2">
+        <form method="POST" action="{{ route('admin.pinjaman.angsuran', $pinjaman) }}" class="flex gap-2">
             @csrf
             @method('PUT')
-            <input type="text" name="nama_juru_bayar" value="{{ old('nama_juru_bayar', $pinjaman->nama_juru_bayar) }}"
-                placeholder="Nama Juru Bayar"
+            <input type="number" step="0.01" min="0" name="jumlah_angsuran" value="{{ old('jumlah_angsuran', $pinjaman->jumlah_angsuran) }}"
+                placeholder="Jumlah angsuran per bulan (Rp)"
                 class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
-            <input type="text" name="nrp_juru_bayar" value="{{ old('nrp_juru_bayar', $pinjaman->nrp_juru_bayar) }}"
-                placeholder="NRP Juru Bayar"
-                class="sm:w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
             <button type="submit" class="bg-[#7a1f2b] text-white rounded-lg px-4 py-2 text-sm hover:bg-[#5e1621] active:scale-95 transition">
                 Simpan
             </button>
         </form>
+
+        @if($pinjaman->isDisetujui())
+            <div class="mt-4 text-sm text-gray-600">
+                Sudah dibayar <strong>{{ $pinjaman->jumlahDibayarKali() }}</strong> dari <strong>{{ $pinjaman->totalCicilan() }}</strong> cicilan —
+                sisa <strong>Rp {{ number_format($pinjaman->sisaAngsuran() ?? 0, 0, ',', '.') }}</strong>
+            </div>
+
+            @if($pinjaman->cicilanAngsuran->isNotEmpty())
+                <div class="mt-4 overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="text-left text-gray-400 border-b border-gray-100">
+                                <th class="py-1 pr-3">Cicilan</th>
+                                <th class="py-1 pr-3">Tanggal Bayar</th>
+                                <th class="py-1 pr-3">Jumlah Dipotong (Rp)</th>
+                                <th class="py-1"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($pinjaman->cicilanAngsuran as $cicilan)
+                                @php $formId = 'form-cicilan-'.$cicilan->id; @endphp
+                                <tr class="border-b border-gray-50 {{ $cicilan->sudahDibayar() ? 'bg-green-50/40' : '' }}">
+                                    <td class="py-1.5 pr-3 font-medium">Ke-{{ $cicilan->cicilan_ke }}</td>
+                                    <td class="py-1.5 pr-3">
+                                        <input type="date" form="{{ $formId }}" name="tanggal_bayar" value="{{ $cicilan->tanggal_bayar?->format('Y-m-d') }}"
+                                            class="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
+                                    </td>
+                                    <td class="py-1.5 pr-3">
+                                        <input type="number" step="0.01" min="0" form="{{ $formId }}" name="jumlah_dipotong"
+                                            value="{{ $cicilan->jumlah_dipotong ?? $pinjaman->jumlah_angsuran }}"
+                                            class="w-32 border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
+                                    </td>
+                                    <td class="py-1.5">
+                                        <button type="submit" form="{{ $formId }}" class="text-[#7a1f2b] hover:underline">Simpan</button>
+                                    </td>
+                                </tr>
+                                <form id="{{ $formId }}" method="POST" action="{{ route('admin.pinjaman.cicilan.update', [$pinjaman, $cicilan]) }}" class="hidden">
+                                    @csrf
+                                    @method('PUT')
+                                </form>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        @endif
     </div>
 
     @if(!$pinjaman->isPending())

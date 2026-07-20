@@ -72,6 +72,13 @@
             </div>
         <?php endif; ?>
 
+        <?php if(session('danger')): ?>
+            <div class="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+                <?php echo e(session('danger')); ?>
+
+            </div>
+        <?php endif; ?>
+
         <?php if($errors->any()): ?>
             <div class="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
                 <ul class="list-disc list-inside">

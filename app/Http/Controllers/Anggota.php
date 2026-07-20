@@ -52,7 +52,6 @@ class Anggota extends Controller
     public function cetak(Pinjaman $pinjaman)
     {
         $this->authorizeOwner($pinjaman);
-        $this->ensureApprovedForPrinting($pinjaman);
 
         return view('anggota.pinjaman.pdf', compact('pinjaman'));
     }
@@ -60,7 +59,6 @@ class Anggota extends Controller
     public function unduhPdf(Pinjaman $pinjaman)
     {
         $this->authorizeOwner($pinjaman);
-        $this->ensureApprovedForPrinting($pinjaman);
 
         $pdf = Pdf::loadView('anggota.pinjaman.pdf', ['pinjaman' => $pinjaman, 'download' => true])
             ->setPaper('a4');
@@ -68,33 +66,22 @@ class Anggota extends Controller
         return $pdf->download('formulir-pinjaman-'.$pinjaman->id.'.pdf');
     }
 
-private function authorizeOwner(Pinjaman $pinjaman): void
-{
-    if (Auth::user()->role !== 'admin' && $pinjaman->user_id !== Auth::id()) {
-        abort(403);
+    private function authorizeOwner(Pinjaman $pinjaman): void
+    {
+        if (Auth::user()->role !== 'admin' && $pinjaman->user_id !== Auth::id()) {
+            abort(403);
+        }
     }
-}
-
-private function ensureApprovedForPrinting(Pinjaman $pinjaman): void
-{
-    // Admin boleh lihat formulir kapan saja (misalnya untuk mengisi data Juru Bayar sebelum ACC).
-    if (Auth::user()->role === 'admin') {
-        return;
-    }
-
-    if (! $pinjaman->isDisetujui()) {
-        abort(403, 'Formulir hanya dapat dicetak setelah pengajuan disetujui oleh admin.');
-    }
-}
 
     private function validateData(Request $request): array
     {
+        // Catatan: jumlah_angsuran SENGAJA tidak divalidasi/diambil di sini.
+        // Field itu sekarang HANYA diisi oleh admin lewat halaman Tinjau Pengajuan.
         $validated = $request->validate([
             'no_rekening' => ['required', 'string', 'max:50'],
             'nama_bank' => ['required', 'string', 'max:100'],
             'no_hp' => ['nullable', 'string', 'max:20'],
             'jumlah_pinjaman' => ['required', 'numeric', 'min:0'],
-            'jumlah_angsuran' => ['required', 'numeric', 'min:0'],
             'jangka_waktu' => ['required', 'string', 'max:50'],
             'punya_hutang_bank' => ['nullable', 'boolean'],
             'hutang_bank_nama' => ['nullable', 'required_if:punya_hutang_bank,1', 'string', 'max:255'],

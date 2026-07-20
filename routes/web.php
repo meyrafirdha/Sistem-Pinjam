@@ -53,10 +53,14 @@ Route::middleware(['auth', 'role:admin'])
 
         // Admin Pinjaman Management
         Route::get('/pinjaman', [Admin::class, 'index'])->name('pinjaman.index');
+        Route::get('/pinjaman/rekap', [Admin::class, 'rekap'])->name('pinjaman.rekap');
+        Route::get('/pinjaman/{pinjaman}/cetak-rekap', [Admin::class, 'cetakRekapSatu'])->name('pinjaman.cetak-rekap');
         Route::get('/pinjaman/{pinjaman}', [Admin::class, 'show'])->name('pinjaman.show');
         Route::post('/pinjaman/{pinjaman}/acc', [Admin::class, 'acc'])->name('pinjaman.acc');
         Route::post('/pinjaman/{pinjaman}/decline', [Admin::class, 'decline'])->name('pinjaman.decline');
-        Route::put('/pinjaman/{pinjaman}/juru-bayar', [Admin::class, 'updateJuruBayar'])->name('pinjaman.juru-bayar');
+        Route::put('/pinjaman/{pinjaman}/angsuran', [Admin::class, 'updateAngsuran'])->name('pinjaman.angsuran');
+        Route::put('/pinjaman/{pinjaman}/cicilan/{cicilan}', [Admin::class, 'updateCicilan'])->name('pinjaman.cicilan.update');
+        Route::put('/juru-bayar', [Admin::class, 'updateJuruBayarGlobal'])->name('juru-bayar.update');
 
         // Admin Pegawai Management
         Route::get('/pegawai', [Pegawai::class, 'index'])->name('pegawai.index');

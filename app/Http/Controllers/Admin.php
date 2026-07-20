@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CicilanAngsuran;
+use App\Models\Pengaturan;
 use App\Models\Pinjaman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,12 +23,12 @@ class Admin extends Controller
         $search = $request->query('search');
         $tanggal = $request->query('tanggal');
 
-        $pinjaman = Pinjaman::with('user')
+        $pinjaman = Pinjaman::with(['user', 'cicilanAngsuran'])
             ->when($status, fn ($query) => $query->where('status', $status))
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('nip_nrp', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('nip_nrp', 'like', '%'.$search.'%');
                 });
             })
             ->when($tanggal, fn ($query) => $query->whereDate('created_at', $tanggal))
@@ -40,23 +42,37 @@ class Admin extends Controller
             'ditolak' => Pinjaman::where('status', 'ditolak')->count(),
         ];
 
-        return view('admin.pinjaman.index', compact('pinjaman', 'status', 'counts', 'search', 'tanggal'));
+        $pengaturan = Pengaturan::current();
+
+        return view('admin.pinjaman.index', compact('pinjaman', 'status', 'counts', 'search', 'tanggal', 'pengaturan'));
     }
-    
+
     public function show(Pinjaman $pinjaman)
     {
-        $pinjaman->load('user', 'processedBy');
+        // Generate baris cicilan 1..N (N = jangka waktu) kalau belum ada, supaya admin tinggal isi.
+        if ($pinjaman->isDisetujui()) {
+            $pinjaman->pastikanCicilanTersedia();
+        }
+
+        $pinjaman->load('user', 'processedBy', 'cicilanAngsuran');
 
         return view('admin.pinjaman.show', compact('pinjaman'));
     }
 
     public function acc(Pinjaman $pinjaman)
     {
+        $pengaturan = Pengaturan::current();
+
         $pinjaman->update([
             'status' => 'disetujui',
             'catatan_admin' => null,
             'processed_by' => Auth::id(),
             'processed_at' => now(),
+            // Kunci (snapshot) nama & NRP Juru Bayar yang berlaku SAAT INI.
+            // Kalau nanti admin ganti nama Juru Bayar secara global, pengajuan
+            // yang sudah di-ACC ini TIDAK ikut berubah.
+            'nama_juru_bayar' => $pengaturan->nama_juru_bayar,
+            'nrp_juru_bayar' => $pengaturan->nrp_juru_bayar,
         ]);
 
         return redirect()->route('admin.pinjaman.show', $pinjaman)->with('success', 'Pengajuan pinjaman disetujui.');
@@ -75,18 +91,66 @@ class Admin extends Controller
             'processed_at' => now(),
         ]);
 
-        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('success', 'Pengajuan pinjaman ditolak.');
+        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('danger', 'Pengajuan pinjaman ditolak.');
     }
 
-    public function updateJuruBayar(Request $request, Pinjaman $pinjaman)
+    public function updateJuruBayarGlobal(Request $request)
     {
         $validated = $request->validate([
             'nama_juru_bayar' => ['nullable', 'string', 'max:255'],
             'nrp_juru_bayar' => ['nullable', 'string', 'max:50'],
         ]);
 
+        Pengaturan::current()->update($validated);
+
+        return redirect()->route('admin.pinjaman.index')->with('success', 'Nama & NRP Juru Bayar berhasil diperbarui untuk semua pengajuan.');
+    }
+
+    public function updateAngsuran(Request $request, Pinjaman $pinjaman)
+    {
+        $validated = $request->validate([
+            'jumlah_angsuran' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
         $pinjaman->update($validated);
 
-        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('success', 'Data Juru Bayar berhasil diperbarui.');
+        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('success', 'Jumlah angsuran berhasil disimpan.');
+    }
+
+    public function updateCicilan(Request $request, Pinjaman $pinjaman, CicilanAngsuran $cicilan)
+    {
+        if ($cicilan->pinjaman_id !== $pinjaman->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'tanggal_bayar' => ['nullable', 'date'],
+            'jumlah_dipotong' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $validated['dicatat_oleh'] = Auth::id();
+
+        $cicilan->update($validated);
+
+        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('success', 'Cicilan ke-'.$cicilan->cicilan_ke.' berhasil disimpan.');
+    }
+
+    public function rekap(Request $request)
+    {
+        $bulan = $request->query('bulan', now()->format('Y-m'));
+
+        $pinjaman = Pinjaman::with(['user', 'cicilanAngsuran'])
+            ->where('status', 'disetujui')
+            ->orderBy('id')
+            ->get();
+
+        return view('admin.pinjaman.rekap', compact('pinjaman', 'bulan'));
+    }
+
+    public function cetakRekapSatu(Pinjaman $pinjaman)
+    {
+        $pinjaman->load('user', 'cicilanAngsuran');
+
+        return view('admin.pinjaman.cetak-rekap', compact('pinjaman'));
     }
 }

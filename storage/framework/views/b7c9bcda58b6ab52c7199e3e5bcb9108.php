@@ -31,7 +31,8 @@
                     <tr class="text-left text-gray-500 border-b border-gray-200">
                         <th class="py-2 pr-4">Tanggal</th>
                         <th class="py-2 pr-4">Jumlah Pinjaman</th>
-                        <th class="py-2 pr-4">Jangka Waktu</th>
+                        <th class="py-2 pr-4">Angsuran/Bulan</th>
+                        <th class="py-2 pr-4">Sisa Angsuran</th>
                         <th class="py-2 pr-4">Status</th>
                         <th class="py-2"></th>
                     </tr>
@@ -41,7 +42,22 @@
                         <tr class="border-b border-gray-100">
                             <td class="py-3 pr-4"><?php echo e($item->created_at->translatedFormat('d M Y')); ?></td>
                             <td class="py-3 pr-4">Rp <?php echo e(number_format($item->jumlah_pinjaman, 0, ',', '.')); ?></td>
-                            <td class="py-3 pr-4"><?php echo e($item->jangka_waktu); ?></td>
+                            <td class="py-3 pr-4">
+                                <?php if($item->jumlah_angsuran): ?>
+                                    Rp <?php echo e(number_format($item->jumlah_angsuran, 0, ',', '.')); ?>
+
+                                <?php else: ?>
+                                    <span class="text-gray-400 italic">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-3 pr-4">
+                                <?php if($item->isDisetujui() && $item->jumlah_angsuran): ?>
+                                    Rp <?php echo e(number_format($item->sisaAngsuran(), 0, ',', '.')); ?>
+
+                                <?php else: ?>
+                                    <span class="text-gray-400 italic">-</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="py-3 pr-4">
                                 <span class="text-xs px-2 py-1 rounded-full border <?php echo e($item->statusColor()); ?>">
                                     <?php echo e($item->statusLabel()); ?>
