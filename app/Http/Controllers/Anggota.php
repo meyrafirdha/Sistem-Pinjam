@@ -11,7 +11,7 @@ class Anggota extends Controller
 {
     public function dashboard()
     {
-        $pinjaman = Auth::user()->pinjaman()->latest()->take(5)->get();
+        $pinjaman = Auth::user()->pinjaman()->where('status', 'disetujui')->latest()->take(5)->get();
 
         return view('anggota.dashboard', compact('pinjaman'));
     }
