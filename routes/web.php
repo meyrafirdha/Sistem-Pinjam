@@ -54,6 +54,7 @@ Route::middleware(['auth', 'role:admin'])
         // Admin Pinjaman Management
         Route::get('/pinjaman', [Admin::class, 'index'])->name('pinjaman.index');
         Route::get('/pinjaman/rekap', [Admin::class, 'rekap'])->name('pinjaman.rekap');
+        Route::get('/pinjaman/rekap-keseluruhan', [Admin::class, 'rekapKeseluruhan'])->name('pinjaman.rekap-keseluruhan');
         Route::get('/pinjaman/{pinjaman}/cetak-rekap', [Admin::class, 'cetakRekapSatu'])->name('pinjaman.cetak-rekap');
         Route::get('/pinjaman/{pinjaman}', [Admin::class, 'show'])->name('pinjaman.show');
         Route::post('/pinjaman/{pinjaman}/acc', [Admin::class, 'acc'])->name('pinjaman.acc');

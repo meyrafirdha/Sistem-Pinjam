@@ -6,6 +6,10 @@
     <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
         <h1 class="text-xl font-semibold text-[#7a1f2b]">Kelola Pengajuan Pinjaman</h1>
         <div class="flex gap-2">
+            <a href="{{ route('admin.pinjaman.rekap-keseluruhan') }}" target="_blank"
+                class="bg-[#7a1f2b] text-white rounded-lg px-4 py-2 text-sm hover:bg-[#5e1621] active:scale-95 transition self-start">
+                Print Rekap
+            </a>
             <details class="relative">
                 <summary class="list-none cursor-pointer bg-[#7a1f2b] text-white rounded-lg px-4 py-2 text-sm hover:bg-[#5e1621] active:scale-95 transition">
                     Edit Nama & NRP Juru Bayar

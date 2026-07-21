@@ -147,6 +147,39 @@ class Admin extends Controller
         return view('admin.pinjaman.rekap', compact('pinjaman', 'bulan'));
     }
 
+    public function rekapKeseluruhan(\Illuminate\Http\Request $request)
+    {
+        $bulan = $request->input('bulan'); // format: 2026-07
+        
+        $query = \App\Models\Pinjaman::with('user')->latest();
+        
+        if ($bulan) {
+            $tahunPilih = substr($bulan, 0, 4);
+            $bulanPilih = substr($bulan, 5, 2);
+            $query->whereYear('created_at', $tahunPilih)
+                ->whereMonth('created_at', $bulanPilih);
+        }
+        
+        $pinjaman = $query->get();
+        
+        // Kelompokkan per bulan untuk tampilan rekap
+        $pinjamanPerBulan = $pinjaman->groupBy(function ($item) {
+            return $item->created_at->format('Y-m');
+        })->sortKeysDesc();
+        
+        // Daftar bulan yang tersedia untuk dropdown filter
+        $bulanTersedia = \App\Models\Pinjaman::selectRaw("DISTINCT DATE_FORMAT(created_at, '%Y-%m') as bulan")
+            ->orderByDesc('bulan')
+            ->pluck('bulan');
+        
+        $totalBelumDibayar = $pinjaman->where('status', 'disetujui')
+            ->sum(fn($p) => $p->sisaAngsuran() ?? 0);
+        
+        return view('admin.pinjaman.rekap-keseluruhan', compact(
+            'pinjaman', 'pinjamanPerBulan', 'bulanTersedia', 'bulan', 'totalBelumDibayar'
+        ));
+    }
+
     public function cetakRekapSatu(Pinjaman $pinjaman)
     {
         $pinjaman->load('user', 'cicilanAngsuran');
