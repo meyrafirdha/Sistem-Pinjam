@@ -1,0 +1,9 @@
+/vendor
+/node_modules
+/storage/framework/views/*.php
+/storage/logs/*.log
+composer.phar
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
