@@ -2,6 +2,13 @@
 @section('title', 'Detail Pengajuan Pinjaman')
 
 @section('content')
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        body { background: #fff; }
+    }
+</style>
+
 <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 max-w-2xl mx-auto">
     <div class="flex justify-between items-start mb-6">
         <div>
@@ -10,22 +17,22 @@
                 {{ $pinjaman->statusLabel() }}
             </span>
         </div>
-        <div class="flex gap-2">
-            <a href="{{ route('anggota.pinjaman.cetak', $pinjaman) }}" target="_blank"
+        <div class="flex gap-2 no-print">
+            <button onclick="window.print()"
                 class="bg-red-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-red-700 active:scale-95 transition">
                 Print
-            </a>
+            </button>
         </div>
     </div>
 
     @if($pinjaman->isPending())
-        <div class="mb-6 p-3 rounded-lg bg-yellow-50 text-yellow-700 text-sm border border-yellow-200">
+        <div class="mb-6 p-3 rounded-lg bg-yellow-50 text-yellow-700 text-sm border border-yellow-200 no-print">
             Pengajuan kamu masih menunggu persetujuan admin.
         </div>
     @endif
 
     @if($pinjaman->status === 'ditolak')
-        <div class="mb-6 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+        <div class="mb-6 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200 no-print">
             <strong>Pengajuan ini ditolak.</strong>
             @if($pinjaman->catatan_admin)
                 Dengan alasan {{ $pinjaman->catatan_admin }} <br>
@@ -86,7 +93,7 @@
 
     <div class="mt-6 pt-6 border-t border-gray-100">
         <h2 class="text-sm font-semibold text-gray-700 mb-3">Status Angsuran</h2>
-        <p class="text-xs text-gray-400 mb-4">Bagian ini diisi & dikelola oleh admin — kamu hanya bisa memantau.</p>
+        <p class="text-xs text-gray-400 mb-4 no-print">Bagian ini diisi & dikelola oleh admin — kamu hanya bisa memantau.</p>
 
         <dl class="grid sm:grid-cols-3 gap-x-6 gap-y-4 text-sm">
             <div>
