@@ -59,6 +59,19 @@ class Admin extends Controller
         return view('admin.pinjaman.show', compact('pinjaman'));
     }
 
+    public function uploadSurat(Request $request, Pinjaman $pinjaman)
+    {
+        $request->validate([
+            'file_surat_ttd' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+        ]);
+
+        $path = $request->file('file_surat_ttd')->store('surat-pinjaman', 'public');
+
+        $pinjaman->update(['file_surat_ttd' => $path]);
+
+        return redirect()->route('admin.pinjaman.show', $pinjaman)->with('success', 'Dokumen hardcopy berhasil diunggah.');
+    }
+
     public function acc(Pinjaman $pinjaman)
     {
         $pengaturan = Pengaturan::current();
@@ -185,5 +198,29 @@ class Admin extends Controller
         $pinjaman->load('user', 'cicilanAngsuran');
 
         return view('admin.pinjaman.cetak-rekap', compact('pinjaman'));
+    }
+
+    public function juruBayarAkun()
+    {
+        $akun = \App\Models\User::where('role', 'juru_bayar')->first();
+
+        return view('admin.juru-bayar-akun', compact('akun'));
+    }
+
+    public function updateJuruBayarPassword(Request $request)
+    {
+        $akun = \App\Models\User::where('role', 'juru_bayar')->firstOrFail();
+
+        $request->validate([
+            'nip_nrp' => ['required', 'string', 'max:18', \Illuminate\Validation\Rule::unique('users', 'nip_nrp')->ignore($akun->id)],
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+        $akun->update([
+            'nip_nrp' => $request->nip_nrp,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+        ]);
+
+        return back()->with('success', 'Username & password akun Juru Bayar berhasil diperbarui. Juru bayar sebelumnya tidak bisa login lagi.');
     }
 }

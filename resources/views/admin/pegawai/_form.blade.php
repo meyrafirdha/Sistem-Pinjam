@@ -56,6 +56,7 @@
         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
 </div>
 
+
 <script>
     (function () {
         const labelMap = {

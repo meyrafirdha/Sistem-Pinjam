@@ -33,13 +33,25 @@
                         <div class="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-10 text-sm">
                             <div class="px-4 py-3 border-b border-gray-100">
                                 <div class="font-medium text-gray-800">{{ auth()->user()->name }}</div>
-                                <div class="text-xs text-gray-400">{{ auth()->user()->isAdmin() ? 'Admin' : 'Anggota' }}</div>
+                                <div class="text-xs text-gray-400">
+                                    @if(auth()->user()->isAdmin())
+                                        Admin
+                                    @elseif(auth()->user()->role === 'juru_bayar')
+                                        Juru Bayar
+                                    @else
+                                        Anggota
+                                    @endif
+                                </div>
                             </div>
 
                             @if (auth()->user()->isAdmin())
                                 <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Dashboard</a>
                                 <a href="{{ route('admin.pinjaman.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Kelola Pinjaman</a>
                                 <a href="{{ route('admin.pegawai.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Kelola Pegawai</a>
+                                <a href="{{ route('admin.juru-bayar-akun.show') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Kelola Akun Juru Bayar</a>
+                            @elseif (auth()->user()->role === 'juru_bayar')
+                                <a href="{{ route('juru-bayar.tagihan.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Tagihan Anggota</a>
+                                <a href="{{ route('juru-bayar.rekap') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Rekap Bulanan</a>
                             @else
                                 <a href="{{ route('anggota.dashboard') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Dashboard</a>
                                 <a href="{{ route('anggota.pinjaman.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Pinjaman Saya</a>
@@ -95,5 +107,25 @@
             Hak Cipta &copy; Kementerian Pertahanan Republik Indonesia
         </p>
     </footer>
+
+    <script>
+    document.addEventListener('toggle', function (e) {
+        if (e.target.tagName === 'DETAILS' && e.target.open) {
+            document.querySelectorAll('details[open]').forEach(function (d) {
+                if (d !== e.target) {
+                    d.removeAttribute('open');
+                }
+            });
+        }
+    }, true);
+
+    document.addEventListener('click', function (e) {
+        document.querySelectorAll('details[open]').forEach(function (d) {
+            if (!d.contains(e.target)) {
+                d.removeAttribute('open');
+            }
+        });
+    });
+</script>
 </body>
 </html>

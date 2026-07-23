@@ -52,7 +52,7 @@
 <body>
 
     @if(!($download ?? false))
-        <button class="print-btn no-print" onclick="window.print()">🖨️ Print Formulir</button>
+        <button class="print-btn no-print" onclick="window.print()">Print Formulir</button>
     @endif
 
     @php

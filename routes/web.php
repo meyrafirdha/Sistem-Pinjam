@@ -7,13 +7,13 @@ use App\Http\Controllers\Pegawai;
 use App\Http\Controllers\Profile;
 use Illuminate\Support\Facades\Route;
 
-// --- GUEST ROUTES ---
+//  GUEST ROUTES 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// --- AUTHENTICATED ROUTES ---
+//  AUTHENTICATED ROUTES 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/ganti-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change.form');
@@ -24,12 +24,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/profil', [Profile::class, 'update'])->name('profile.update');
 });
 
-// --- REDIRECT ROOT ---
+//  REDIRECT ROOT 
 Route::get('/', function () {
     return redirect('/login');
 });
 
-// --- ANGGOTA (DASHBOARD) ROUTES ---
+//  ANGGOTA (DASHBOARD) ROUTES 
 Route::middleware(['auth', 'role:admin,anggota'])
     ->prefix('dashboard')
     ->name('anggota.')
@@ -43,7 +43,7 @@ Route::middleware(['auth', 'role:admin,anggota'])
         Route::get('/pinjaman/{pinjaman}/unduh', [Anggota::class, 'unduhPdf'])->name('pinjaman.unduh');
     });
 
-// --- ADMIN ROUTES ---
+// ADMIN ROUTES 
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
@@ -61,7 +61,10 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/pinjaman/{pinjaman}/decline', [Admin::class, 'decline'])->name('pinjaman.decline');
         Route::put('/pinjaman/{pinjaman}/angsuran', [Admin::class, 'updateAngsuran'])->name('pinjaman.angsuran');
         Route::put('/pinjaman/{pinjaman}/cicilan/{cicilan}', [Admin::class, 'updateCicilan'])->name('pinjaman.cicilan.update');
+        Route::post('/pinjaman/{pinjaman}/upload-surat', [Admin::class, 'uploadSurat'])->name('pinjaman.upload-surat');
         Route::put('/juru-bayar', [Admin::class, 'updateJuruBayarGlobal'])->name('juru-bayar.update');
+        Route::get('/juru-bayar-akun', [Admin::class, 'juruBayarAkun'])->name('juru-bayar-akun.show');
+        Route::put('/juru-bayar-akun/password', [Admin::class, 'updateJuruBayarPassword'])->name('juru-bayar-akun.password');
 
         // Admin Pegawai Management
         Route::get('/pegawai', [Pegawai::class, 'index'])->name('pegawai.index');
@@ -72,4 +75,22 @@ Route::middleware(['auth', 'role:admin'])
         Route::put('/pegawai/{pegawai}', [Pegawai::class, 'update'])->name('pegawai.update');
         Route::post('/pegawai/{pegawai}/reset-password', [Pegawai::class, 'resetPassword'])->name('pegawai.reset-password');
         Route::delete('/pegawai/{pegawai}', [Pegawai::class, 'destroy'])->name('pegawai.destroy');
+    });
+
+// JURU BAYAR ROUTES (terpisah dari grup admin) 
+Route::middleware(['auth', 'role:juru_bayar,admin'])
+    ->prefix('juru-bayar')
+    ->name('juru-bayar.')
+    ->group(function () {
+        Route::get('/tagihan', [\App\Http\Controllers\JuruBayar::class, 'index'])->name('tagihan.index');
+        Route::get('/tagihan/{user}', [\App\Http\Controllers\JuruBayar::class, 'show'])->name('tagihan.show');
+    });
+
+Route::middleware(['auth', 'role:juru_bayar,admin'])
+    ->prefix('juru-bayar')
+    ->name('juru-bayar.')
+    ->group(function () {
+        Route::get('/tagihan', [\App\Http\Controllers\JuruBayar::class, 'index'])->name('tagihan.index');
+        Route::get('/tagihan/{user}', [\App\Http\Controllers\JuruBayar::class, 'show'])->name('tagihan.show');
+        Route::get('/rekap', [\App\Http\Controllers\JuruBayar::class, 'rekap'])->name('rekap');
     });

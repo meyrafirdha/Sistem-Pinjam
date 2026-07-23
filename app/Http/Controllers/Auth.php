@@ -21,9 +21,7 @@ class Auth extends Controller
         if (\Illuminate\Support\Facades\Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return $request->user()->isAdmin()
-                ? redirect()->intended('/admin/dashboard')
-                : redirect()->intended('/dashboard');
+            return redirect()->intended($this->redirectPathFor($request->user()));
         }
 
         return back()->withErrors([
@@ -59,8 +57,19 @@ class Auth extends Controller
         $user->must_change_password = false;
         $user->save();
 
-        $redirect = $user->isAdmin() ? '/admin/dashboard' : '/dashboard';
+        return redirect($this->redirectPathFor($user))->with('success', 'Password berhasil diganti.');
+    }
+    
+    private function redirectPathFor($user): string
+    {
+        if ($user->isAdmin()) {
+            return '/admin/dashboard';
+        }
 
-        return redirect($redirect)->with('success', 'Password berhasil diganti.');
+        if ($user->role === 'juru_bayar') {
+            return '/juru-bayar/tagihan';
+        }
+
+        return '/dashboard';
     }
 }

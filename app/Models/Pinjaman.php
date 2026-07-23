@@ -29,6 +29,7 @@ class Pinjaman extends Model
         'processed_at',
         'nama_juru_bayar',
         'nrp_juru_bayar',
+        'file_surat_ttd',
     ];
 
     protected function casts(): array

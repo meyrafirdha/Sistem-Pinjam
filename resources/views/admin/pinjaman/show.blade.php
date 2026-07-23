@@ -10,7 +10,7 @@
                 {{ $pinjaman->statusLabel() }}
             </span>
         </div>
-        <a href="{{ route('anggota.pinjaman.cetak', $pinjaman) }}" target="_blank"
+        <a href="{{ route('anggota.pinjaman.cetak', $pinjaman) }}"
             class="border border-[#7a1f2b] text-[#7a1f2b] rounded-lg px-3 py-2 text-sm hover:bg-[#7a1f2b]/5 active:scale-95 transition">
             Lihat Formulir
         </a>
@@ -72,6 +72,28 @@
     </dl>
 
     <div class="mt-6 pt-6 border-t border-gray-100">
+        <div class="mt-6 pt-6 border-t border-gray-100">
+            <h2 class="text-sm font-semibold text-gray-700 mb-2">Arsip Dokumen Hardcopy (Bertanda Tangan)</h2>
+            <p class="text-xs text-gray-400 mb-3">
+                Upload hasil scan surat yang sudah ditandatangani lengkap (anggota, admin, kabag) sebagai arsip digital.
+            </p>
+
+            @if($pinjaman->file_surat_ttd)
+                <div class="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex justify-between items-center">
+                    <span>Dokumen sudah diunggah.</span>
+                    <a href="{{ asset('storage/'.$pinjaman->file_surat_ttd) }}" target="_blank" class="underline font-medium">Lihat Dokumen</a>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('admin.pinjaman.upload-surat', $pinjaman) }}" enctype="multipart/form-data" class="flex gap-2">
+                @csrf
+                <input type="file" name="file_surat_ttd" accept=".pdf,.jpg,.jpeg,.png" required
+                    class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/30">
+                <button type="submit" class="bg-[#7a1f2b] text-white rounded-lg px-4 py-2 text-sm hover:bg-[#5e1621] active:scale-95 transition">
+                    Upload
+                </button>
+            </form>
+        </div>
         <h2 class="text-sm font-semibold text-gray-700 mb-2">Jumlah Angsuran per Bulan</h2>
         <p class="text-xs text-gray-400 mb-3">
             Isi ini setelah dokumen fisik & tanda tangan lengkap. Nilai ini yang dipakai untuk menghitung sisa angsuran.

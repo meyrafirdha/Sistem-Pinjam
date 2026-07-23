@@ -50,7 +50,7 @@
                                 </span>
                             </td>
                             <td class="py-3 text-right space-x-3">
-                                <a href="{{ route('anggota.pinjaman.cetak', $item) }}" target="_blank" class="text-gray-500 hover:underline">Print</a>
+                                <a href="{{ route('anggota.pinjaman.cetak', $item) }}" class="text-gray-500 hover:underline">Print</a>
                                 <a href="{{ route('anggota.pinjaman.show', $item) }}" class="text-[#7a1f2b] hover:underline">Detail</a>
                             </td>
                         </tr>

@@ -39,6 +39,11 @@ class User extends Authenticatable
     {
         return $this->role === 'anggota';
     }
+    
+    public function isJuruBayar(): bool
+    {
+        return $this->role === 'juru_bayar';
+    }
 
     public function pinjaman()
     {

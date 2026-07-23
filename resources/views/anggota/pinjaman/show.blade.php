@@ -7,6 +7,10 @@
         .no-print { display: none !important; }
         body { background: #fff; }
     }
+    /* Saat print mode "detail angsuran" aktif, sembunyikan data formulir */
+    body.print-angsuran-only .formulir-section {
+        display: none !important;
+    }
 </style>
 
 <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 max-w-2xl mx-auto">
@@ -18,21 +22,25 @@
             </span>
         </div>
         <div class="flex gap-2 no-print">
-            <button onclick="window.print()"
+            <a href="{{ route('anggota.pinjaman.cetak', $pinjaman) }}"
+                class="bg-gray-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-700 active:scale-95 transition">
+                Print Formulir
+            </a>
+            <button onclick="printAngsuranOnly()"
                 class="bg-red-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-red-700 active:scale-95 transition">
-                Print
+                Print Detail Angsuran
             </button>
         </div>
     </div>
 
     @if($pinjaman->isPending())
-        <div class="mb-6 p-3 rounded-lg bg-yellow-50 text-yellow-700 text-sm border border-yellow-200 no-print">
+        <div class="mb-6 p-3 rounded-lg bg-yellow-50 text-yellow-700 text-sm border border-yellow-200 no-print formulir-section">
             Pengajuan kamu masih menunggu persetujuan admin.
         </div>
     @endif
 
     @if($pinjaman->status === 'ditolak')
-        <div class="mb-6 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200 no-print">
+        <div class="mb-6 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200 no-print formulir-section">
             <strong>Pengajuan ini ditolak.</strong>
             @if($pinjaman->catatan_admin)
                 Dengan alasan {{ $pinjaman->catatan_admin }} <br>
@@ -42,7 +50,7 @@
         </div>
     @endif
 
-    <dl class="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+    <dl class="formulir-section grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
         <div>
             <dt class="text-gray-400">Nama</dt>
             <dd class="text-gray-800">{{ $pinjaman->user->name }}</dd>
@@ -123,4 +131,15 @@
         </dl>
     </div>
 </div>
+
+<script>
+    function printAngsuranOnly() {
+        document.body.classList.add('print-angsuran-only');
+        window.print();
+        // Bersihkan lagi setelah dialog print ditutup
+        setTimeout(() => {
+            document.body.classList.remove('print-angsuran-only');
+        }, 500);
+    }
+</script>
 @endsection
